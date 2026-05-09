@@ -140,6 +140,7 @@ export function LoginFlow(props: LoginFlowProps) {
               disabled={!phoneValid || sending}
               loading={sending}
               onClick={onSendCode}
+              data-testid="login-send-code-btn"
             >
               {sending ? '发送中...' : '发验证码'}
             </Button>
