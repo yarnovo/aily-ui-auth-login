@@ -1,0 +1,51 @@
+{
+  "name": "@aily-ui/auth-login",
+  "version": "0.1.0",
+  "description": "akong AuthLogin · 手机号 + OTP 2 步登录 wizard · 跨端 (Web + React Native)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": "./src/index.native.ts",
+      "default": "./src/index.ts"
+    },
+    "./style.css": "./src/LoginFlow.css"
+  },
+  "files": ["src", "README.md"],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "@aily-ui/tokens": "*",
+    "@aily-ui/button": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-native": { "optional": true }
+  },
+  "devDependencies": {
+    "@aily-ui/tokens": "github:yarnovo/aily-ui-tokens",
+    "@aily-ui/button": "github:yarnovo/aily-ui-button",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "^4.1.5",
+    "jsdom": "^29.1.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-native": "^0.85.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yarnovo/aily-ui-auth-login.git"
+  },
+  "license": "UNLICENSED",
+  "private": false
+}

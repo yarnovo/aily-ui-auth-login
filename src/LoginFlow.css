@@ -1,0 +1,109 @@
+/* akong-auth-login · Web 样式 · 用 var(--ak-*) 接 @aily-ui/tokens
+ * 视觉跟 xiaoxi-app 旧版 LoginPage 一致 (深底 + 居中 + 大 input + 大按钮)
+ */
+
+.ak-login-flow {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 1.5rem 2.5rem;
+  background: var(--ak-bg);
+  color: var(--ak-fg);
+  font-family: var(--ak-font-sans, inherit);
+  box-sizing: border-box;
+}
+
+.ak-login-flow__header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.ak-login-flow__title {
+  font-size: 2.25rem;
+  font-weight: var(--ak-weight-semibold, 600);
+  line-height: 1.2;
+  margin: 0 0 0.5rem 0;
+  color: var(--ak-fg);
+}
+
+.ak-login-flow__subtitle {
+  font-size: 0.875rem;
+  color: var(--ak-fg-secondary, var(--ak-fg-muted));
+  margin: 0;
+}
+
+.ak-login-flow__panel {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* phone / code input · 共用样式 */
+.ak-login-flow__input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: var(--ak-radius-md, 0.375rem);
+  background: var(--ak-bg-elevated);
+  border: 1px solid var(--ak-border);
+  color: var(--ak-fg);
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease);
+  -webkit-appearance: none;
+}
+
+.ak-login-flow__input::placeholder {
+  color: var(--ak-fg-secondary, var(--ak-fg-subtle));
+}
+
+.ak-login-flow__input:focus {
+  border-color: var(--ak-accent, var(--ak-border-strong));
+}
+
+.ak-login-flow__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* code step · phone 灰显示 (mask phase 文案) */
+.ak-login-flow__phone-display {
+  font-size: 0.875rem;
+  color: var(--ak-fg-secondary, var(--ak-fg-muted));
+  text-align: center;
+  margin: 0;
+}
+
+/* OTP step 底栏 · 换手机号 / 重发 */
+.ak-login-flow__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.ak-login-flow__link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ak-fg-secondary, var(--ak-fg-muted));
+  font: inherit;
+  font-size: 0.875rem;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease);
+}
+
+.ak-login-flow__link:hover:not(:disabled) {
+  color: var(--ak-fg);
+}
+
+.ak-login-flow__link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>akong AuthLogin · demo</title>
+    <link rel="stylesheet" href="../../tokens/src/style.css" />
+    <link rel="stylesheet" href="../../button/src/Button.css" />
+    <link rel="stylesheet" href="../src/LoginFlow.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import React from 'react'
+      import ReactDOM from 'react-dom/client'
+      import { LoginFlow } from '../src/index.ts'
+
+      function App() {
+        return React.createElement(LoginFlow, {
+          title: '小喜',
+          subtitle: '找你的人',
+          sendCode: async (phone) => {
+            console.log('sendCode', phone)
+            return { ok: true, debug_code: '123456' }
+          },
+          verifyCode: async (phone, code) => {
+            console.log('verifyCode', phone, code)
+            return { jwt: 'demo-jwt', user: { id: 'demo', phone } }
+          },
+          onSuccess: (r) => {
+            alert('登录成功 · ' + JSON.stringify(r))
+          },
+        })
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App))
+    </script>
+  </body>
+</html>
