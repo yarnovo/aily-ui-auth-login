@@ -41,7 +41,7 @@
   }
   .toggle {
     position: fixed;
-    top: 16px;
+    top: 64px;
     right: 16px;
     padding: 8px 12px;
     border-radius: var(--ak-radius-full);
@@ -52,9 +52,29 @@
     cursor: pointer;
     z-index: 100;
   }
+  .back-to-index {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    padding: 8px 16px;
+    background: var(--ak-bg-elevated);
+    border: 1px solid var(--ak-border-subtle);
+    border-radius: var(--ak-radius-full);
+    color: var(--ak-fg-muted);
+    text-decoration: none;
+    font-size: var(--ak-text-sm);
+    box-shadow: var(--ak-shadow-sm);
+    transition: all 0.2s;
+  }
+  .back-to-index:hover {
+    background: var(--ak-bg-hover);
+    color: var(--ak-fg);
+  }
 </style>
 </head>
 <body>
+  <a href="https://yarnovo.github.io/aily-ui-core/" class="back-to-index">← 回 aily-ui 总站</a>
   <button class="toggle" id="t">切换暗色</button>
   <div class="demo-wrap">
     <h2>Step 1 · 手机号</h2>
