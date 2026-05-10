@@ -1,110 +1,105 @@
-import { useEffect, useState } from 'react'
-import { Button } from '@aily-ui/button'
-import type { LoginFlowProps, LoginStep } from './LoginFlow.types'
-import { PhoneInputStep } from './PhoneInputStep'
-import { OtpInputStep } from './OtpInputStep'
-import { PHONE_RE } from './LoginFlow.behavior'
+import { useMemo, useState } from 'react'
+import type { LoginFlowProps, Provider, OAuthProvider } from './types'
+import { PhoneSmsTab } from './tabs/PhoneSmsTab'
+import { EmailPasswordTab } from './tabs/EmailPasswordTab'
+import { UsernamePasswordTab } from './tabs/UsernamePasswordTab'
+import { GoogleButton } from './oauth/GoogleButton'
+import { WechatButton } from './oauth/WechatButton'
+import { QQButton } from './oauth/QQButton'
+import { ProviderDivider } from './shared/ProviderDivider'
 import './LoginFlow.css'
 
-/** akong AuthLogin · LoginFlow · Web · 2 步手机号登录 wizard
+/** 真分类 provider · password-based 真 tab · oauth 真 button row */
+type ActiveTab = 'phone-sms' | 'email-password' | 'username-password'
+
+const TAB_LABELS: Record<ActiveTab, string> = {
+  'phone-sms': '手机号',
+  'email-password': '邮箱',
+  'username-password': '用户名',
+}
+
+const PASSWORD_TABS: ActiveTab[] = ['phone-sms', 'email-password', 'username-password']
+
+/** akong AuthLogin · LoginFlow · Web · 真支持 6 provider
  *
- * 第 1 步: phone input + "发验证码"
- * 第 2 步: phone (灰显示) + code input + "登录" + 倒计时重发 + 换手机号
+ * default providers=['phone-sms'] · 真 backwards-compat (旧 caller 真不破)
  *
- * sendCode / verifyCode / onSuccess 通过 props 注入 · 组件不写死 endpoint。
+ * password-based 3 个 (phone-sms / email-password / username-password) 真 tab 真切
+ * oauth-* 3 个 真"其他登录方式" 真 button row
+ *
+ * 接口适配通过 props 注入 · 组件不写死 endpoint。
  */
 export function LoginFlow(props: LoginFlowProps) {
   const {
     title,
     subtitle,
-    sendCode,
-    verifyCode,
+    providers = ['phone-sms'],
+    onSendCode,
+    onVerifyCode,
+    onEmailLogin,
+    onEmailRegister,
+    onEmailReset,
+    onUsernameLogin,
+    onUsernameRegister,
+    onUsernameReset,
+    onOAuthLogin,
     onSuccess,
     onError,
     onDebugCode,
+    redirectAfterLogin,
     resendSeconds = 60,
     codeLength = 6,
     className,
   } = props
 
-  const [step, setStep] = useState<LoginStep>('phone')
-  const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
-  const [sending, setSending] = useState(false)
-  const [verifying, setVerifying] = useState(false)
-  const [resendIn, setResendIn] = useState(0)
+  // 真按 providers list 过滤 password-based tabs · 真按声明顺序保持
+  const passwordTabs = useMemo(
+    () => providers.filter((p): p is ActiveTab => PASSWORD_TABS.includes(p as ActiveTab)),
+    [providers],
+  )
 
-  /** 倒计时 · 1s tick · resendIn = 0 时停 */
-  useEffect(() => {
-    if (resendIn <= 0) return
-    const t = setInterval(() => setResendIn((s) => Math.max(0, s - 1)), 1000)
-    return () => clearInterval(t)
-  }, [resendIn])
+  // OAuth 真子 list (真按声明顺序)
+  const oauthProviders = useMemo(() => {
+    const list: OAuthProvider[] = []
+    for (const p of providers) {
+      if (p === 'oauth-google') list.push('google')
+      else if (p === 'oauth-wechat') list.push('wechat')
+      else if (p === 'oauth-qq') list.push('qq')
+    }
+    return list
+  }, [providers])
+
+  const [activeTab, setActiveTab] = useState<ActiveTab>(passwordTabs[0] ?? 'phone-sms')
 
   const reportError = (msg: string) => {
     if (onError) onError(msg)
     else if (typeof window !== 'undefined') window.alert(msg)
   }
 
-  const reportDebugCode = (code: string) => {
-    if (onDebugCode) onDebugCode(code)
+  const reportDebugCode = (c: string) => {
+    if (onDebugCode) onDebugCode(c)
     else if (typeof window !== 'undefined') {
-      window.alert(`debug 模式 · 验证码: ${code}\n(prod 切真 SMS 后此 alert 不弹)`)
+      window.alert(`debug 模式 · 验证码: ${c}\n(prod 切真 SMS 后此 alert 不弹)`)
     }
   }
 
-  const onSendCode = async () => {
-    if (!PHONE_RE.test(phone)) {
-      reportError('请输入正确的 11 位手机号')
-      return
-    }
-    if (sending) return
-    setSending(true)
-    try {
-      const r = (await sendCode(phone)) as { ok?: boolean; debug_code?: string | null } | void
-      if (r && r.ok === false) throw new Error('发送失败')
-      // debug 模式 · sendCode 返 debug_code 时调 onDebugCode (让自测)
-      if (r && r.debug_code) {
-        reportDebugCode(r.debug_code)
-      }
-      setStep('code')
-      setResendIn(resendSeconds)
-    } catch (e) {
-      reportError(`发送失败: ${String(e instanceof Error ? e.message : e)}`)
-    } finally {
-      setSending(false)
+  // 真 redirect after login · onSuccess wrapper
+  const handleSuccess = (auth: unknown) => {
+    onSuccess(auth)
+    if (redirectAfterLogin && typeof window !== 'undefined') {
+      // 真调用方真处理 token 存储后真跳转
+      // (真 setTimeout 0 真让 onSuccess 同步 setState 完成 · 真避免 React batch 漏)
+      setTimeout(() => {
+        window.location.href = redirectAfterLogin
+      }, 0)
     }
   }
 
-  const onVerify = async () => {
-    if (code.length !== codeLength) {
-      reportError(`请输入 ${codeLength} 位验证码`)
-      return
-    }
-    if (verifying) return
-    setVerifying(true)
-    try {
-      const r = await verifyCode(phone, code)
-      onSuccess(r)
-    } catch (e) {
-      reportError(`验证失败: ${String(e instanceof Error ? e.message : e)}`)
-    } finally {
-      setVerifying(false)
-    }
+  // 真 noop · 真 oauth-* 真 click 时真触发 (真调用方真 redirect 到 OAuth url)
+  const handleOAuth = (p: OAuthProvider) => {
+    if (onOAuthLogin) onOAuthLogin(p)
+    else reportError(`未配置 OAuth 登录回调 (${p})`)
   }
-
-  const onResend = () => {
-    if (resendIn > 0) return
-    setCode('')
-    onSendCode()
-  }
-
-  const onChangePhone = () => {
-    setStep('phone')
-    setCode('')
-  }
-
-  const phoneValid = PHONE_RE.test(phone)
 
   return (
     <div
@@ -122,50 +117,107 @@ export function LoginFlow(props: LoginFlowProps) {
         )}
       </div>
 
-      {step === 'phone' && (
-        <div className="ak-login-flow__panel" data-testid="login-step-phone">
-          <input
-            type="tel"
-            inputMode="numeric"
-            maxLength={11}
-            placeholder="手机号"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-            data-testid="login-phone-input"
-            className="ak-login-flow__input"
-          />
-          <div data-testid="login-send-code-btn-wrap">
-            <Button
-              fullWidth
-              disabled={!phoneValid || sending}
-              loading={sending}
-              onClick={onSendCode}
-              data-testid="login-send-code-btn"
+      {/* password-based tabs */}
+      {passwordTabs.length > 1 && (
+        <div className="ak-login-flow__tabs" data-testid="login-tabs" role="tablist">
+          {passwordTabs.map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === t}
+              className={[
+                'ak-login-flow__tab',
+                activeTab === t && 'ak-login-flow__tab--active',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => setActiveTab(t)}
+              data-testid={`login-tab-${t}`}
             >
-              {sending ? '发送中...' : '发验证码'}
-            </Button>
-          </div>
+              {TAB_LABELS[t]}
+            </button>
+          ))}
         </div>
       )}
 
-      {step === 'code' && (
-        <OtpInputStep
-          phone={phone}
-          code={code}
-          onCodeChange={setCode}
-          onVerify={onVerify}
-          verifying={verifying}
-          onResend={onResend}
-          resendIn={resendIn}
-          onChangePhone={onChangePhone}
+      {/* active tab body */}
+      {activeTab === 'phone-sms' && passwordTabs.includes('phone-sms') && onSendCode && onVerifyCode && (
+        <PhoneSmsTab
+          onSendCode={onSendCode}
+          onVerifyCode={onVerifyCode}
+          onSuccess={handleSuccess}
+          onError={reportError}
+          onDebugCode={reportDebugCode}
+          resendSeconds={resendSeconds}
           codeLength={codeLength}
-          sending={sending}
         />
+      )}
+
+      {activeTab === 'email-password' &&
+        passwordTabs.includes('email-password') &&
+        onEmailLogin && (
+          <EmailPasswordTab
+            onLogin={onEmailLogin}
+            onRegister={onEmailRegister}
+            onReset={onEmailReset}
+            onSendCode={onSendCode}
+            onSuccess={handleSuccess}
+            onError={reportError}
+            onDebugCode={reportDebugCode}
+            resendSeconds={resendSeconds}
+            codeLength={codeLength}
+          />
+        )}
+
+      {activeTab === 'username-password' &&
+        passwordTabs.includes('username-password') &&
+        onUsernameLogin && (
+          <UsernamePasswordTab
+            onLogin={onUsernameLogin}
+            onRegister={onUsernameRegister}
+            onReset={onUsernameReset}
+            onSendCode={onSendCode}
+            onSuccess={handleSuccess}
+            onError={reportError}
+            onDebugCode={reportDebugCode}
+            resendSeconds={resendSeconds}
+            codeLength={codeLength}
+          />
+        )}
+
+      {/* OAuth row */}
+      {oauthProviders.length > 0 && (
+        <>
+          {passwordTabs.length > 0 && <ProviderDivider />}
+          <div className="ak-login-flow__oauth-row" data-testid="login-oauth-row">
+            {oauthProviders.includes('google') && (
+              <GoogleButton onClick={() => handleOAuth('google')} />
+            )}
+            {oauthProviders.includes('wechat') && (
+              <WechatButton onClick={() => handleOAuth('wechat')} />
+            )}
+            {oauthProviders.includes('qq') && (
+              <QQButton onClick={() => handleOAuth('qq')} />
+            )}
+          </div>
+        </>
       )}
     </div>
   )
 }
 
-// re-export sub-step components for convenience
-export { PhoneInputStep, OtpInputStep }
+// re-export sub components
+export { PhoneSmsTab, EmailPasswordTab, UsernamePasswordTab }
+export { GoogleButton, WechatButton, QQButton }
+export { PasswordInput } from './shared/PasswordInput'
+export { SmsCodeInput } from './shared/SmsCodeInput'
+export { ProviderDivider } from './shared/ProviderDivider'
+
 export default LoginFlow
+
+// re-export 旧 step components (真 backwards-compat · 真旧 caller 自拼 wizard 真不破)
+export { PhoneInputStep } from './PhoneInputStep'
+export { OtpInputStep } from './OtpInputStep'
+
+export type { Provider, OAuthProvider } from './types'

@@ -24,8 +24,8 @@ export function LoginFlow(props: LoginFlowProps) {
   const {
     title,
     subtitle,
-    sendCode,
-    verifyCode,
+    onSendCode: sendCode,
+    onVerifyCode: verifyCode,
     onSuccess,
     onError,
     onDebugCode,
@@ -63,6 +63,10 @@ export function LoginFlow(props: LoginFlowProps) {
       reportError('请输入正确的 11 位手机号')
       return
     }
+    if (!sendCode) {
+      reportError('未配置 onSendCode')
+      return
+    }
     if (sending) return
     setSending(true)
     try {
@@ -81,6 +85,10 @@ export function LoginFlow(props: LoginFlowProps) {
   const onVerify = async () => {
     if (code.length !== codeLength) {
       reportError(`请输入 ${codeLength} 位验证码`)
+      return
+    }
+    if (!verifyCode) {
+      reportError('未配置 onVerifyCode')
       return
     }
     if (verifying) return

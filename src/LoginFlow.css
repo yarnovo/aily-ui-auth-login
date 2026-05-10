@@ -107,3 +107,105 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* tabs · password-based 真切 */
+.ak-login-flow__tabs {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--ak-border-subtle, var(--ak-border));
+}
+
+.ak-login-flow__tab {
+  background: transparent;
+  border: 0;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--ak-fg-secondary, var(--ak-fg-muted));
+  font: inherit;
+  font-size: 0.95rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease),
+    border-color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ak-login-flow__tab:hover {
+  color: var(--ak-fg);
+}
+
+.ak-login-flow__tab--active {
+  color: var(--ak-fg);
+  border-bottom-color: var(--ak-accent, var(--ak-fg));
+}
+
+/* divider · "其他登录方式" */
+.ak-login-flow__divider {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--ak-fg-secondary, var(--ak-fg-muted));
+  font-size: 0.8125rem;
+}
+
+.ak-login-flow__divider::before,
+.ak-login-flow__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ak-border-subtle, var(--ak-border));
+}
+
+.ak-login-flow__divider-label {
+  white-space: nowrap;
+}
+
+/* oauth row · Google / 微信 / QQ button row */
+.ak-login-flow__oauth-row {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ak-login-flow__oauth-btn {
+  flex: 1;
+  min-width: 6rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border-radius: var(--ak-radius-md, 0.375rem);
+  background: var(--ak-bg-elevated);
+  border: 1px solid var(--ak-border);
+  color: var(--ak-fg);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease),
+    border-color var(--ak-duration-fast, 120ms) var(--ak-ease-out, ease);
+}
+
+.ak-login-flow__oauth-btn:hover:not(:disabled) {
+  background: var(--ak-bg-hover, var(--ak-bg-elevated));
+  border-color: var(--ak-border-strong, var(--ak-border));
+}
+
+.ak-login-flow__oauth-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ak-login-flow__oauth-icon {
+  flex-shrink: 0;
+}
